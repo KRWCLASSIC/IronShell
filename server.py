@@ -13,6 +13,7 @@ HOST = '127.0.0.1'
 PORT = 7869
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 
 CONFIG_PATH = 'config.json'
 INSTALL_BASE_PATH = 'installBase.ps1'
@@ -215,6 +216,23 @@ def root():
     return Response(ps_script, mimetype='text/plain')
 
 @app.route('/install/', defaults={'app_name': None})
+def install_default(app_name):
+    if is_browser_request():
+        return Response(get_html_page(), mimetype='text/html')
+    default_endpoint = APPS.get('default')
+    if not default_endpoint or default_endpoint not in PREBUILT_PATHS:
+        host = request.host_url.rstrip('/')
+        ps_script = (
+            'Write-Host "Default app is not available on this server." -ForegroundColor Red\n'
+            'Write-Host ""\n'
+            'Write-Host "Run the following to see available apps:" -ForegroundColor Yellow\n'
+            f'Write-Host "iwr {host}/list | iex" -ForegroundColor Cyan\n'
+        )
+        return Response(ps_script, mimetype='text/plain')
+    script_path = PREBUILT_PATHS[default_endpoint]
+    print(f"[INFO] Served install script for default app: {default_endpoint}")
+    return send_file(script_path, mimetype='text/plain')
+
 @app.route('/install/<path:app_name>')
 def install(app_name):
     if is_browser_request():
@@ -258,15 +276,6 @@ def install(app_name):
             f'Write-Host "  iwr {host}/install/app?versionlist | iex" -ForegroundColor Cyan\n'
         )
         return Response(ps_script, mimetype='text/plain')
-    if app_name is None:
-        # Use default app
-        default_endpoint = APPS.get('default')
-        if not default_endpoint or default_endpoint not in PREBUILT_PATHS:
-            print(f"[WARN] Default app not set or not found in prebuilt installers.")
-            return abort(404, 'Default app not found')
-        script_path = PREBUILT_PATHS[default_endpoint]
-        print(f"[INFO] Served install script for default app: {default_endpoint}")
-        return send_file(script_path, mimetype='text/plain')
     if app_name not in APPS:
         print(f"[WARN] Install requested for unknown app: {app_name}")
         host = request.host_url.rstrip('/')
@@ -339,6 +348,24 @@ def install(app_name):
     print(f"[INFO] Served install script for: {app_name} (version: {version})")
     return Response(script, mimetype='text/plain')
 
+@app.route('/uninstall/', defaults={'app_name': None})
+def uninstall_default(app_name):
+    if is_browser_request():
+        return Response(get_html_page(), mimetype='text/html')
+    default_endpoint = APPS.get('default')
+    if not default_endpoint or default_endpoint not in PREBUILT_PATHS:
+        host = request.host_url.rstrip('/')
+        ps_script = (
+            'Write-Host "Default app is not available for uninstall on this server." -ForegroundColor Red\n'
+            'Write-Host ""\n'
+            'Write-Host "Run the following to see available apps:" -ForegroundColor Yellow\n'
+            f'Write-Host "iwr {host}/list | iex" -ForegroundColor Cyan\n'
+        )
+        return Response(ps_script, mimetype='text/plain')
+    script_path = PREBUILT_PATHS[default_endpoint]
+    print(f"[INFO] Served uninstall script for default app: {default_endpoint}")
+    return send_file(script_path, mimetype='text/plain')
+
 @app.route('/uninstall/<app_name>')
 def uninstall(app_name):
     if is_browser_request():
@@ -388,6 +415,7 @@ def help_endpoint():
         'Write-Host "  /install/<app>   - Get install script for <app>" -ForegroundColor White\n'
         'Write-Host "  /install/        - Get install script for default app" -ForegroundColor White\n'
         'Write-Host "  /uninstall/<app> - Get uninstall script for <app>" -ForegroundColor White\n'
+        'Write-Host "  /uninstall/      - Get uninstall script for default app" -ForegroundColor White\n'
         'Write-Host "  /list            - List all available apps" -ForegroundColor White\n'
         'Write-Host "  /help            - Show this help message" -ForegroundColor White\n'
         'Write-Host ""\n'
@@ -402,6 +430,9 @@ def help_endpoint():
         'Write-Host ""\n'
         'Write-Host "Example usage:" -ForegroundColor Yellow\n'
         f'Write-Host "  iwr {host}/install/app | iex" -ForegroundColor Cyan\n'
+        f'Write-Host "  iwr {host}/install/ | iex" -ForegroundColor Cyan\n'
+        f'Write-Host "  iwr {host}/uninstall/app | iex" -ForegroundColor Cyan\n'
+        f'Write-Host "  iwr {host}/uninstall/ | iex" -ForegroundColor Cyan\n'
         f'Write-Host "  iwr {host}/list | iex" -ForegroundColor Cyan\n'
         'Write-Host ""\n'
         'Write-Host "To see all available apps, run:" -ForegroundColor Yellow\n'
