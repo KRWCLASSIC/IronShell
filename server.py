@@ -31,6 +31,14 @@ if not os.path.exists(CONFIG_PATH):
     print("[INFO] config.json not found, creating default config...")
     default_config = {
         "apps": {
+            "default": {
+                "owner": "your-github-username",
+                "repo": "your-repo",
+                "binary": "your-app.exe",
+                "version": "latest",
+                "name": "DefaultApp",
+                "folder": "DefaultAppFolder"
+            },
             "nitrosensual": {
                 "owner": "KRWCLASSIC",
                 "repo": "NitroSensual",
