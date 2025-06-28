@@ -1,12 +1,12 @@
 from flask import Flask, Response, request, abort, send_file
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
+import threading
 import requests
 import fnmatch
 import json
-import os
-import threading
 import time
+import os
 
 # Server host and port configuration
 HOST = '127.0.0.1'
