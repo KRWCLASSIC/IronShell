@@ -1,6 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IronShell App Installer Server</title>
+    <style>
+        body {
+            background: #181c20;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: #23272b;
+            border-radius: 16px;
+            box-shadow: 0 4px 32px #000a;
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            max-width: 420px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #6cf0ff;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 16px #6cf0ff44;
+            transition: color 0.2s;
+        }
+        .logo:hover {
+            color: #ff6c9d;
+            text-shadow: 0 2px 24px #ff6c9d88;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            color: #b0b8c0;
+            margin-bottom: 1.5rem;
+        }
+        .endpoint-list {
+            background: #181c20;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            text-align: left;
+        }
+        .endpoint-list code {
+            color: #ffb347;
+            background: #23272b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.98em;
+        }
+        .footer {
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 2rem;
+        }
+        .footer a.repo-link {
+            color: #666;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+        .footer a.repo-link:hover {
+            color: #666;
+            text-decoration: none;
+        }
+        a {
+            color: #6cf0ff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        a:hover {
+            color: #ff6c9d;
+        }
+        .ohoh {
+            font-family: monospace;
+            color: #ff6c9d;
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+        .code-block-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 0.7em;
+        }
+        .code-block {
+            background: #181c20;
+            color: #ffb347;
+            font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+            font-size: 1.08em;
+            border-radius: 7px;
+            padding: 0.85em 1.2em 0.85em 1.2em;
+            margin: 0;
+            box-shadow: 0 2px 12px #0006;
+            min-width: 320px;
+            text-align: left;
+            overflow-x: auto;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #23272b;
+            color: #ffb347;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 0.98em;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            opacity: 0.85;
+        }
+        .copy-btn:hover {
+            background: #ffb347;
+            color: #23272b;
+            opacity: 1;
+        }
+        /* Material 3 outlined icon button for copy */
+        .material-btn {
+            background: none;
+            border: 1.5px solid #ffb347;
+            border-radius: 7px;
+            padding: 0;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffb347;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            box-shadow: none;
+            outline: none;
+        }
+        .material-btn:hover, .material-btn:focus {
+            background: #23272b;
+            border-color: #fff2c2;
+            color: #fff2c2;
+        }
+        .material-icons {
+            font-family: 'Material Icons';
+            font-style: normal;
+            font-weight: normal;
+            font-size: 22px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
 <body>
-    <h1>IronShell</h1>
-    <p>IronShell is a self-hosted flask-waitress server for distributing Windows applications via PowerShell one-liners. It dynamically generates PowerShell installer scripts for your apps, supporting version selection, custom install folders, and user-friendly display names.</p>
-
-    <h2>Please visit <a href="IronShell Github page">https://github.com/KRWCLASSIC/IronShell</a> for more information.</h2>
+    <div class="container">
+        <div class="logo" id="logo">IronShell</div>
+        <div class="subtitle">PowerShell App Installer Server<br><span style="color:#6cf0ff;">for Windows</span></div>
+        <div class="endpoint-list">
+            <b>Quick endpoints:</b><br>
+            <code>/install/&lt;app&gt;</code> – Install an app<br>
+            <code>/uninstall/&lt;app&gt;</code> – Uninstall an app<br>
+            <code>/list</code> – List available apps<br>
+            <code>/help</code> – Full help & usage<br>
+        </div>
+        <div style="margin-bottom:1.2rem;">
+            <b>Usage guide:</b><br>
+            <span style="font-size:0.98em;color:#b0b8c0;">To see help, use the command below in PowerShell:</span><br>
+            <div class="code-block-container">
+                <pre class="code-block"><code id="usage-example"></code></pre>
+                <button class="copy-btn material-btn" id="copy-btn" title="Copy to clipboard">
+                    <span class="material-icons">content_copy</span>
+                </button>
+            </div>
+        </div>
+        <div class="ohoh" id="ohoh">OhOohhoOOjavascript</div>
+        <div class="footer">
+            <a href="https://github.com/KRWCLASSIC" target="_blank" rel="noopener">KRWCLASSIC</a> &mdash; <a href="https://github.com/KRWCLASSIC/IronShell" target="_blank" rel="noopener" class="repo-link">IronShell Server</a>
+        </div>
+    </div>
+    <script>
+        // Animate the logo color
+        const logo = document.getElementById('logo');
+        let hue = 180;
+        setInterval(() => {
+            hue = (hue + 1) % 360;
+            logo.style.color = `hsl(${hue}, 100%, 70%)`;
+            logo.style.textShadow = `0 2px 16px hsl(${hue}, 100%, 70%, 0.3)`;
+        }, 30);
+        // Usage example with dynamic host
+        const usage = document.getElementById('usage-example');
+        const usageCmd = `iwr ${window.location.origin}/help | iex`;
+        usage.textContent = usageCmd;
+        // Copy button logic
+        const copyBtn = document.getElementById('copy-btn');
+        copyBtn.onclick = function() {
+            navigator.clipboard.writeText(usageCmd);
+            copyBtn.classList.add('copied');
+            copyBtn.querySelector('.material-icons').textContent = 'check';
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.querySelector('.material-icons').textContent = 'content_copy';
+            }, 1200);
+        };
+        // Playful OhOohhoOOjavascript animation
+        const ohoh = document.getElementById('ohoh');
+        let chars = ohoh.textContent.split('');
+        setInterval(() => {
+            let i = Math.floor(Math.random() * chars.length);
+            let newChars = chars.map((c, idx) => idx === i ? c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase() : c);
+            ohoh.textContent = newChars.join('');
+        }, 400);
+        // Google Material Icons font
+        const link = document.createElement('link');
+        link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+    </script>
 </body>
+</html>

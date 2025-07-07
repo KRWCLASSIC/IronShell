@@ -2,3 +2,4 @@ prebuiltInstallers/
 .vscode/
 
 config.json
+.hintrc
