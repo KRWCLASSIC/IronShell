@@ -2,15 +2,20 @@
 
 **IronShell** is a self-hosted flask-waitress server for distributing Windows applications via PowerShell one-liners. It dynamically generates PowerShell installer scripts for your apps, supporting version selection, custom install folders, and user-friendly display names.
 
-> On boot, the server generates install scripts for all apps in `config.json` and saves them to `prebuiltInstallers/`, if you only want generated scripts, you can just take them from there. I plan to add a way to make server work only in script generation mode or easy CLI creator via arguments, might even create new app for it.
-
 ## krwutils CLI app
 
 Still in development, but it simplifies install proccess of my apps.
 
+## TODO
+
+- Autorun on install
+- Predefined arguments on autorun
+- Versioning (ISver.txt file in target folder to throw out hash stuff)
+- Non-binary apps support (.py script with wrappers etc., additional subscripts for checking machine env. like installed python etc.)
+
 ## Future
 
-- Autoupdate server scripts on boot. (pufferpannel only? preboot script)
+- Autoupdate server (install/uninstall scripts) on boot. (pufferpannel only? preboot script)
 - Linux Support/Port with .sh scripts or krwutils only port.
 
 ## Features

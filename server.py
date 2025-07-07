@@ -75,6 +75,13 @@ with open(INSTALL_BASE_PATH, 'r', encoding='utf-8') as f:
     install_base = f.read()
 print("[INFO] Base install script loaded.")
 
+print("[INFO] Reading base uninstall script...")
+if not os.path.exists(UNINSTALL_BASE_PATH):
+    raise FileNotFoundError(f"{UNINSTALL_BASE_PATH} not found. Please provide the base uninstall script.")
+with open(UNINSTALL_BASE_PATH, 'r', encoding='utf-8') as f:
+    uninstall_base = f.read()
+print("[INFO] Base uninstall script loaded.")
+
 # Ensure prebuilt installers directory exists
 os.makedirs(PREBUILT_DIR, exist_ok=True)
 
@@ -151,48 +158,6 @@ def get_tag_by_version(owner, repo, version_rule):
             print(f"[WARN] Tag '{version_rule}' not found for {repo}")
             return None
 
-# Pre-generate install scripts for all apps (except 'default' key)
-PREBUILT_PATHS = {}
-print("[INFO] Prebuilding installers for all apps...")
-for endpoint_name, app_cfg in APPS.items():
-    print(f"[INFO] Prebuilding installer for endpoint '{endpoint_name}'...")
-    owner = app_cfg.get("owner")
-    repo = app_cfg.get("repo")
-    binary = app_cfg.get("binary")
-    version_rule = app_cfg.get("version", "latest")
-    display_name = app_cfg.get("name") or repo
-    folder_name = app_cfg.get("folder") or repo
-    if not all([owner, repo, binary]):
-        print(f"[WARN] Missing config for {endpoint_name}, skipping.")
-        continue
-    version = get_tag_by_version(owner, repo, version_rule)
-    if not version:
-        print(f"[WARN] Could not determine version for {endpoint_name}, skipping.")
-        continue
-    script = install_base
-    script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
-    script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
-    script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = "{version}"')
-    script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
-    script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
-    script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
-    script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
-                            f'/{owner}/{repo}/releases/download/{version}/{binary}')
-    script_path = os.path.join(PREBUILT_DIR, f'install{endpoint_name}.ps1')
-    with open(script_path, 'w', encoding='utf-8') as f:
-        f.write(script)
-    PREBUILT_PATHS[endpoint_name] = script_path
-    print(f"[INFO] Prebuilt installer for {endpoint_name} -> {repo} v{version} at {script_path}")
-print("[INFO] All installers prebuilt.")
-
-# Read base uninstall script
-print("[INFO] Reading base uninstall script...")
-if not os.path.exists(UNINSTALL_BASE_PATH):
-    raise FileNotFoundError(f"{UNINSTALL_BASE_PATH} not found. Please provide the base uninstall script.")
-with open(UNINSTALL_BASE_PATH, 'r', encoding='utf-8') as f:
-    uninstall_base = f.read()
-print("[INFO] Base uninstall script loaded.")
-
 def is_browser_request():
     ua = request.headers.get('User-Agent', '').lower()
     if 'powershell' in ua:
@@ -228,7 +193,7 @@ def install_default(app_name):
     if is_browser_request():
         return Response(get_html_page(), mimetype='text/html')
     default_endpoint = APPS.get('default')
-    if not default_endpoint or default_endpoint not in PREBUILT_PATHS:
+    if not default_endpoint or default_endpoint not in APPS:
         host = request.host_url.rstrip('/')
         ps_script = (
             'Write-Host "Default app is not available on this server." -ForegroundColor Red\n'
@@ -237,9 +202,26 @@ def install_default(app_name):
             f'Write-Host "iwr {host}/list | iex" -ForegroundColor Cyan\n'
         )
         return Response(ps_script, mimetype='text/plain')
-    script_path = PREBUILT_PATHS[default_endpoint]
-    print(f"[INFO] Served install script for default app: {default_endpoint}")
-    return send_file(script_path, mimetype='text/plain')
+    app_cfg = APPS[default_endpoint]
+    owner = app_cfg.get("owner")
+    repo = app_cfg.get("repo")
+    binary = app_cfg.get("binary")
+    display_name = app_cfg.get("name") or repo
+    folder_name = app_cfg.get("folder") or repo
+    version_rule = app_cfg.get("version", "latest")
+    version = get_tag_by_version(owner, repo, version_rule)
+    if not version:
+        return Response(f'Write-Host "Could not determine version for default app." -ForegroundColor Red', mimetype='text/plain')
+    script = install_base
+    script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
+    script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
+    script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = "{version}"')
+    script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
+    script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
+    script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+    script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
+                            f'/{owner}/{repo}/releases/download/{version}/{binary}')
+    return Response(script, mimetype='text/plain')
 
 @app.route('/install/<path:app_name>')
 def install(app_name):
@@ -310,9 +292,20 @@ def install(app_name):
         return Response(ps_script, mimetype='text/plain')
     # If no version override, use prebuilt installer if available
     if not version_override:
-        if app_name in PREBUILT_PATHS:
+        if app_name in APPS:
             print(f"[INFO] Served prebuilt install script for: {app_name}")
-            return send_file(PREBUILT_PATHS[app_name], mimetype='text/plain')
+            version = get_tag_by_version(owner, repo, version_rule)
+            if version:
+                script = install_base
+                script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
+                script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
+                script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = "{version}"')
+                script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
+                script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
+                script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+                script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
+                                        f'/{owner}/{repo}/releases/download/{version}/{binary}')
+                return Response(script, mimetype='text/plain')
     # Otherwise, generate dynamically
     version = get_tag_by_version(owner, repo, version_rule)
     if not version:
@@ -361,7 +354,7 @@ def uninstall_default(app_name):
     if is_browser_request():
         return Response(get_html_page(), mimetype='text/html')
     default_endpoint = APPS.get('default')
-    if not default_endpoint or default_endpoint not in PREBUILT_PATHS:
+    if not default_endpoint or default_endpoint not in APPS:
         host = request.host_url.rstrip('/')
         ps_script = (
             'Write-Host "Default app is not available for uninstall on this server." -ForegroundColor Red\n'
@@ -370,9 +363,20 @@ def uninstall_default(app_name):
             f'Write-Host "iwr {host}/list | iex" -ForegroundColor Cyan\n'
         )
         return Response(ps_script, mimetype='text/plain')
-    script_path = PREBUILT_PATHS[default_endpoint]
-    print(f"[INFO] Served uninstall script for default app: {default_endpoint}")
-    return send_file(script_path, mimetype='text/plain')
+    app_cfg = APPS[default_endpoint]
+    owner = app_cfg.get("owner")
+    repo = app_cfg.get("repo")
+    binary = app_cfg.get("binary")
+    display_name = app_cfg.get("name") or repo
+    folder_name = app_cfg.get("folder") or repo
+    script = uninstall_base
+    script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
+    script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
+    script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = ""')
+    script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
+    script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
+    script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+    return Response(script, mimetype='text/plain')
 
 @app.route('/uninstall/<app_name>')
 def uninstall(app_name):
@@ -501,7 +505,6 @@ def refresh_tags_and_regen_installers():
                         script_path = os.path.join(PREBUILT_DIR, f'install{endpoint_name}.ps1')
                         with open(script_path, 'w', encoding='utf-8') as f:
                             f.write(script)
-                        PREBUILT_PATHS[endpoint_name] = script_path
                         print(f"[INFO] Refreshed prebuilt installer for {endpoint_name} -> {repo} v{version} at {script_path}")
         print(f"[INFO] Periodic tag refresh complete.")
 
