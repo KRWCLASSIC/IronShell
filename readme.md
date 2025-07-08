@@ -197,7 +197,7 @@ If `autorun` is set to true, the installer will automatically run the app after 
 
 ### 📜 License
 
-This project is licensed under **[KRW LICENSE v1](https://github.com/KRWCLASSIC/IronShell/blob/main/LICENSE)**  
+This project is licensed under **[KRW LICENSE v1](https://github.com/KRWCLASSIC/IronShell?tab=License-1-ov-file)**  
 Free for non-commercial use and public forks.
 
 💬 Contact me even for personal uses — I might feature your project!  
