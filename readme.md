@@ -17,6 +17,7 @@ Still in development, but it simplifies install proccess of my apps.
 
 ## Future
 
+- Custom Pufferpanel template
 - Autoupdate server (install/uninstall scripts) on boot. (pufferpannel only? preboot script)
 - Linux Support/Port with .sh scripts or krwutils only port.
 
