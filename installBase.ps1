@@ -48,16 +48,6 @@ if (Test-Path $isverPath) {
 if ($skipInstall) {
     if ($APP_AUTORUN -eq $true) {
         Write-Host "Press any key to continue... (autorun enabled)"
-    
-        $autorunCmd = ""
-        if ($APP_AUTORUN_PREFIX -ne "") {
-            $autorunCmd += $APP_AUTORUN_PREFIX + " "
-        }
-    
-        $autorunCmd += '"' + $binaryPath + '"'
-        if ($APP_AUTORUN_ARGS -ne "") {
-            $autorunCmd += " " + $APP_AUTORUN_ARGS
-        }
     } else {
         Write-Host "Press any key to continue..."
     }
@@ -65,11 +55,15 @@ if ($skipInstall) {
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     
     if ($APP_AUTORUN -eq $true) {
-        Write-Host "Autorun enabled. Running: $autorunCmd" -ForegroundColor Cyan
+        Write-Host "Autorun enabled. Running: "$APP_AUTORUN_PREFIX `"$binaryPath`" $APP_AUTORUN_ARGS"" -ForegroundColor Cyan
         if ($APP_AUTORUN_PREFIX -ne "") {
-            Start-Process powershell -ArgumentList "-NoExit", "-Command", $autorunCmd
+            Start-Process powershell -ArgumentList "-NoExit", "-Command", "$APP_AUTORUN_PREFIX `"$binaryPath`" $APP_AUTORUN_ARGS"
         } else {
-            Invoke-Expression $autorunCmd
+            if ($APP_AUTORUN_ARGS -ne "") {
+                & $binaryPath $APP_AUTORUN_ARGS.Split(" ")
+            } else {
+                & $binaryPath
+            }
         }
     }
     return
@@ -123,16 +117,6 @@ if (Test-Path $binaryPath) {
 
 if ($APP_AUTORUN -eq $true) {
     Write-Host "Press any key to continue... (autorun enabled)"
-
-    $autorunCmd = ""
-    if ($APP_AUTORUN_PREFIX -ne "") {
-        $autorunCmd += $APP_AUTORUN_PREFIX + " "
-    }
-
-    $autorunCmd += '"' + $binaryPath + '"'
-    if ($APP_AUTORUN_ARGS -ne "") {
-        $autorunCmd += " " + $APP_AUTORUN_ARGS
-    }
 } else {
     Write-Host "Press any key to continue..."
 }
@@ -140,10 +124,14 @@ if ($APP_AUTORUN -eq $true) {
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
 if ($APP_AUTORUN -eq $true) {
-    Write-Host "Autorun enabled. Running: $autorunCmd" -ForegroundColor Cyan
+    Write-Host "Autorun enabled. Running: "$APP_AUTORUN_PREFIX `"$binaryPath`" $APP_AUTORUN_ARGS"" -ForegroundColor Cyan
     if ($APP_AUTORUN_PREFIX -ne "") {
-        Start-Process powershell -ArgumentList "-NoExit", "-Command", $autorunCmd
+        Start-Process powershell -ArgumentList "-NoExit", "-Command", "$APP_AUTORUN_PREFIX `"$binaryPath`" $APP_AUTORUN_ARGS"
     } else {
-        Invoke-Expression $autorunCmd
+        if ($APP_AUTORUN_ARGS -ne "") {
+            & $binaryPath $APP_AUTORUN_ARGS.Split(" ")
+        } else {
+            & $binaryPath
+        }
     }
 }
