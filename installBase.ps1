@@ -43,6 +43,8 @@ if (Test-Path $isverPath) {
     } else {
         Write-Host "Installed version ($installedVersion) differs from requested ($targetVersion). Updating..." -ForegroundColor Yellow
     }
+} else {
+    Write-Host "No ISver.txt found. Will perform fresh installation of $APP_DISPLAYNAME ($APP_VERSION)." -ForegroundColor Yellow
 }
 
 if ($skipInstall) {
