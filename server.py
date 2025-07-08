@@ -37,7 +37,10 @@ if not os.path.exists(CONFIG_PATH):
                 "binary": "your-app.exe",
                 "version": "latest",
                 "name": "DefaultApp",
-                "folder": "DefaultAppFolder"
+                "folder": "DefaultAppFolder",
+                "autorun": False,
+                "autorunPrefix": "",
+                "autorunArguments": ""
             },
             "nitrosensual": {
                 "owner": "KRWCLASSIC",
@@ -219,6 +222,9 @@ def install_default(app_name):
     script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
     script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
     script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+    script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
+    script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
+    script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
     script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
                             f'/{owner}/{repo}/releases/download/{version}/{binary}')
     return Response(script, mimetype='text/plain')
@@ -303,6 +309,9 @@ def install(app_name):
                 script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
                 script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
                 script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+                script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
+                script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
+                script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
                 script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
                                         f'/{owner}/{repo}/releases/download/{version}/{binary}')
                 return Response(script, mimetype='text/plain')
@@ -344,6 +353,9 @@ def install(app_name):
     script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
     script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
     script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+    script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
+    script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
+    script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
     script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
                             f'/{owner}/{repo}/releases/download/{version}/{binary}')
     print(f"[INFO] Served install script for: {app_name} (version: {version})")
@@ -425,9 +437,9 @@ def help_endpoint():
         'Write-Host "This server provides PowerShell install scripts for Windows apps." -ForegroundColor Green\n'
         'Write-Host "\nAvailable endpoints:" -ForegroundColor Yellow\n'
         'Write-Host "  /install/<app>   - Get install script for <app>" -ForegroundColor White\n'
-        'Write-Host "  /install/        - Get install script for default app" -ForegroundColor White\n'
+        'Write-Host "  /install         - Get install script for default app" -ForegroundColor White\n'
         'Write-Host "  /uninstall/<app> - Get uninstall script for <app>" -ForegroundColor White\n'
-        'Write-Host "  /uninstall/      - Get uninstall script for default app" -ForegroundColor White\n'
+        'Write-Host "  /uninstall       - Get uninstall script for default app" -ForegroundColor White\n'
         'Write-Host "  /list            - List all available apps" -ForegroundColor White\n'
         'Write-Host "  /help            - Show this help message" -ForegroundColor White\n'
         'Write-Host ""\n'
@@ -500,6 +512,9 @@ def refresh_tags_and_regen_installers():
                         script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
                         script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
                         script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+                        script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
+                        script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
+                        script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
                         script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
                                                 f'/{owner}/{repo}/releases/download/{version}/{binary}')
                         script_path = os.path.join(PREBUILT_DIR, f'install{endpoint_name}.ps1')

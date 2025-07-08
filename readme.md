@@ -6,12 +6,14 @@
 
 Still in development, but it simplifies install proccess of my apps.
 
+> yeah thats a lie, i didnt even start it.
+
 ## TODO
 
-- Autorun on install
-- Predefined arguments on autorun
-- Versioning (ISver.txt file in target folder to throw out hash stuff)
-- Non-binary apps support (.py script with wrappers etc., additional subscripts for checking machine env. like installed python etc.)
+- Force remove installation folder on uninstall or config value to configure what should be deleted aswell (with * meaninng force entire folder removal)
+- Create shortcuts on install
+- Non-binary apps support (.py script with wrappers etc., additional subscripts for checking machine env. like installed python etc.) | 25% done (via autorun prefix, left to do: env checking, dependencies, run helpers, winget integration? etc.)
+- Clean up base scripts and fix ordering of variables (huge mess)
 
 ## Future
 
@@ -90,7 +92,10 @@ The server uses a `config.json` file to define which apps are available for inst
             "version": "latest",            // (optional) Version/tag selection rule (see below)
             "name": "Display Name",         // (optional) User-friendly name for display in the installer (defaults to repo)
             "folder": "installfolder"       // (optional) Folder name for installation (defaults to repo)
-        }
+            "autorun": false,               // (optional) Autorun app after install (default: false)
+            "autorunPrefix": "",            // (optional) Prefix for autorun command (e.g. "cmd /k", "python -m")
+            "autorunArguments": ""          // (optional) Arguments for autorun command
+        },
         // ... more apps ...
     }
 }
@@ -110,6 +115,9 @@ The server uses a `config.json` file to define which apps are available for inst
   - Wildcards: `"*-Nuitka"`, `"?.?.?-Nuitka"` — Uses the first tag matching the pattern (shell-style wildcards)
 - **name**: (Optional) User-friendly display name for the app, shown in the PowerShell output. Defaults to the repo name if not set.
 - **folder**: (Optional) The folder name under `%APPDATA%\<owner>\<folder>` where the app will be installed. Defaults to the repo name if not set.
+- **autorun**: (Optional, default: false) If true, the app will be run automatically after installation completes.
+- **autorunPrefix**: (Optional) If set, this prefix will be prepended to the autorun command (e.g. `python -m`, `cmd /k`). If set, the autorun command will be launched in a new PowerShell window.
+- **autorunArguments**: (Optional) Arguments to pass to the autorun command (e.g. `--help`).
 
 ### Example
 
@@ -122,27 +130,51 @@ The server uses a `config.json` file to define which apps are available for inst
             "binary": "sasm.exe",
             "version": "*-Nuitka",
             "name": "SASM",
-            "folder": "steamaccountswitchermanager"
+            "folder": "steamaccountswitchermanager",
+            "autorun": false,
+            "autorunPrefix": "",
+            "autorunArguments": ""
         },
-        "nitrosensual": {
-            "owner": "KRWCLASSIC",
-            "repo": "NitroSensual",
-            "binary": "nitrosensual.exe",
+        "my-python-app": {
+            "owner": "me",
+            "repo": "my-python-repo",
+            "binary": "myscript.py",
             "version": "latest",
-            "name": "NitroSensual",
-            "folder": "NitroSensual"
-        },
-        "weget": {
-            "owner": "KRWCLASSIC",
-            "repo": "weget",
-            "binary": "weget.exe",
-            "version": "latest",
-            "name": "Weget",
-            "folder": "weget"
+            "name": "MyPythonApp",
+            "folder": "mypythonapp",
+            "autorun": true,
+            "autorunPrefix": "python -m",
+            "autorunArguments": "--help"
         }
     }
 }
 ```
+
+### Autorun Behavior
+
+If `autorun` is set to true, the installer will automatically run the app after installation:
+
+- If `autorunPrefix` is set (e.g. `python`, `cmd /k`), the command will be launched in a **new PowerShell window** so apps dont collide with execution of the installer.
+- If `autorunPrefix` is not set, the binary will be run directly in the current session.
+- `autorunArguments` are appended to the command.
+
+**Examples:**
+
+- Run a CLI app and keep the window open:
+
+  ```json
+  "autorun": true,
+  "autorunPrefix": "cmd /k",
+  "autorunArguments": ""
+  ```
+
+- Run a Python script:
+
+  ```json
+  "autorun": true,
+  "autorunPrefix": "python -m",
+  "autorunArguments": "--help"
+  ```
 
 ### Notes
 

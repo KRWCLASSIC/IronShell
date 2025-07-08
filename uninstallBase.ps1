@@ -1,41 +1,61 @@
 # Script version
 # Below variables are handled by external script that edits them.
-$scriptVersion = "v1.0"
+$scriptVersion = "v1.1"
 $APP_OWNER = ""
 $APP_BINARY = ""
 $APP_DISPLAYNAME = ""
 $APP_FOLDER = ""
-Write-Host "$APP_DISPLAYNAME uninstaller | IronShell uninstaller $scriptVersion" -ForegroundColor Cyan
 
 # Define installation path (user only)
 $installPath = Join-Path $env:APPDATA "$APP_OWNER\$APP_FOLDER"
 
+# ISver file path
+$isverPath = Join-Path $installPath "ISver.txt"
+$installedVersion = "unknown"
+if (Test-Path $isverPath) {
+    $installedVersion = (Get-Content $isverPath -Raw).Trim()
+}
+Write-Host "$APP_DISPLAYNAME ($installedVersion) uninstaller | IronShell uninstaller $scriptVersion" -ForegroundColor Cyan
+
 # Check if already installed in user path
 $binaryPath = Join-Path $installPath "$APP_BINARY"
 Write-Host "Expected $APP_BINARY path: $binaryPath" -ForegroundColor Magenta
-if (!(Test-Path $binaryPath)) {
-    Write-Host "$APP_DISPLAYNAME is not installed at: $binaryPath" -ForegroundColor Yellow
-    Write-Host "Nothing to uninstall." -ForegroundColor Green
-    Write-Host "Press any key to continue..."
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    return
-}
 
-# Try to remove the binary
+# Try to remove the binary (if it exists)
 try {
-    Remove-Item $binaryPath -Force
-    Write-Host "Removed $APP_BINARY from $installPath" -ForegroundColor Green
+    if (Test-Path $binaryPath) {
+        Remove-Item $binaryPath -Force
+        Write-Host "Removed $APP_BINARY from $installPath" -ForegroundColor Green
+    } else {
+        Write-Host "$APP_BINARY not found in $installPath" -ForegroundColor Yellow
+    }
 } catch {
     Write-Host ("Failed to remove " + $APP_BINARY + ": " + $_) -ForegroundColor Red
 }
 
+# Try to remove ISver.txt (if it exists)
+try {
+    if (Test-Path $isverPath) {
+        Remove-Item $isverPath -Force
+        Write-Host "Removed ISver.txt from $installPath" -ForegroundColor Green
+    } else {
+        Write-Host "ISver.txt not found in $installPath" -ForegroundColor Yellow
+    }
+} catch {
+    Write-Host ("Failed to remove ISver.txt: " + $_) -ForegroundColor Red
+}
+
 # Try to remove the install directory if empty
 try {
-    if ((Get-ChildItem -Path $installPath | Measure-Object).Count -eq 0) {
-        Remove-Item $installPath -Force
-        Write-Host "Removed empty install directory: $installPath" -ForegroundColor Green
+    if (Test-Path $installPath) {
+        if ((Get-ChildItem -Path $installPath | Measure-Object).Count -eq 0) {
+            Remove-Item $installPath -Force
+            Write-Host "Removed empty install directory: $installPath" -ForegroundColor Green
+        } else {
+            Write-Host "Install directory not empty, not removed: $installPath" -ForegroundColor Yellow
+        }
     } else {
-        Write-Host "Install directory not empty, not removed: $installPath" -ForegroundColor Yellow
+        Write-Host "$installPath does not exist, nothing to remove." -ForegroundColor Yellow
     }
 } catch {
     Write-Host ("Failed to remove install directory: " + $_) -ForegroundColor Red
