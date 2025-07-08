@@ -26,6 +26,10 @@ TAG_CACHE_LOCK = threading.Lock()
 
 TAG_REFRESH_INTERVAL_MINUTES = 60  # Default: 1 hour
 
+# Globals for auto-reload
+LAST_RELOAD_TIME = 0
+RELOAD_COOLDOWN = 60  # seconds
+
 # Create default config.json if it doesn't exist
 if not os.path.exists(CONFIG_PATH):
     print("[INFO] config.json not found, creating default config...")
@@ -176,6 +180,10 @@ def is_browser_request():
 def get_html_page():
     with open('IronShell.html', 'r', encoding='utf-8') as f:
         return f.read()
+
+@app.before_request
+def before_request_reload():
+    reload_config_and_bases()
 
 @app.route('/')
 def root():
@@ -537,6 +545,22 @@ def refresh_tag_cache():
 
 # Start the background tag refresh thread
 threading.Thread(target=refresh_tag_cache, daemon=True).start()
+
+def reload_config_and_bases():
+    global config, APPS, install_base, uninstall_base, LAST_RELOAD_TIME
+    now = time.time()
+    if now - LAST_RELOAD_TIME < RELOAD_COOLDOWN:
+        return
+    print("[INFO] Reloading config and base scripts...")
+    with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    APPS = config.get('apps', {})
+    with open(INSTALL_BASE_PATH, 'r', encoding='utf-8') as f:
+        install_base = f.read()
+    with open(UNINSTALL_BASE_PATH, 'r', encoding='utf-8') as f:
+        uninstall_base = f.read()
+    LAST_RELOAD_TIME = now
+    print("[INFO] Reload complete.")
 
 if __name__ == '__main__':
     from waitress import serve
