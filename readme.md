@@ -178,6 +178,7 @@ If `autorun` is set to true, the installer will automatically run the app after 
 
 ### Notes
 
+- You can set `autorunPrefix` to `" "` to run the app in new window without any actual prefix.
 - All fields except `name` and `folder` are required for each app.
 - The `version` field supports wildcards (`*`, `?`) for flexible tag selection.
 - The `name` field is used for all user-facing output in the PowerShell installer.
