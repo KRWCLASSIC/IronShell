@@ -119,7 +119,7 @@ The server uses a `config.json` file to define which apps are available for inst
 - **name**: (Optional) User-friendly display name for the app, shown in the PowerShell output. Defaults to the repo name if not set.
 - **folder**: (Optional) The folder name under `%APPDATA%\<owner>\<folder>` where the app will be installed. Defaults to the repo name if not set.
 - **autorun**: (Optional, default: false) If true, the app will be run automatically after installation completes.
-- **autorunPrefix**: (Optional) If set, this prefix will be prepended to the autorun command (e.g. `python -m`, `cmd /k`). If set, the autorun command will be launched in a new PowerShell window.
+- **autorunPrefix**: (Optional) If set, this prefix will be prepended to the autorun command (e.g. `python -m`, `cmd /k`). If set, the autorun command will be launched in a new PowerShell window. *see [Notes](#notes) and [Autorun Behavior](#autorun-behavior) for more info
 - **autorunArguments**: (Optional) Arguments to pass to the autorun command (e.g. `--help`).
 - **postInstallMessage**: (Optional) If set, this message will be shown after installation completes.
 - **postUninstallMessage**: (Optional) If set, this message will be shown after uninstallation completes.
@@ -164,7 +164,7 @@ The server uses a `config.json` file to define which apps are available for inst
 
 If `autorun` is set to true, the installer will automatically run the app after installation:
 
-- If `autorunPrefix` is set (e.g. `python`, `cmd /k`), the command will be launched in a **new PowerShell window** so apps dont collide with execution of the installer.
+- If `autorunPrefix` is set (e.g. `python`, `cmd /k`), the command will be launched in a **new PowerShell window** so apps dont collide with execution of the installer. *see [Notes](#notes) for more info
 - If `autorunPrefix` is not set, the binary will be run directly in the current session.
 - `autorunArguments` are appended to the command.
 
@@ -189,8 +189,8 @@ If `autorun` is set to true, the installer will automatically run the app after 
 ### Notes
 
 - You can set `autorunPrefix` to `" "` to run the app in new window without any actual prefix.
-- All fields except `name` and `folder` are required for each app.
-- The `version` field supports wildcards (`*`, `?`) for flexible tag selection.
+- The `owner`, `repo`, and `binary` fields are required for each app. Other fields have default values if not specified.
+- The `version` field in config supports wildcards (`*`, `?`) for flexible tag selection.
 - The `name` field is used for all user-facing output in the PowerShell installer.
 - The `folder` field controls the install directory name; use it to match the folder your app creates or expects.
 - The endpoint name (e.g., `weget`) is what users will use in the install URL: `iwr http://yourserver/install/weget | iex`

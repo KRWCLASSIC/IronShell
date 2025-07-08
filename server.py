@@ -294,7 +294,31 @@ def install(app_name):
     binary = app_cfg.get("binary")
     display_name = app_cfg.get("name") or repo
     folder_name = app_cfg.get("folder") or repo
-    version_rule = version_override if version_override else app_cfg.get("version", "latest")
+    version_rule = app_cfg.get("version", "latest")
+    user_forced_version = version_override is not None
+    config_uses_wildcard = any(x in version_rule for x in ('*', '?'))
+    warn_on_forced_version = user_forced_version and config_uses_wildcard
+    warning_block = ""
+    version = get_tag_by_version(owner, repo, version_override if version_override else version_rule)
+    # Build warning message with resolved version if it differs from the requested
+    requested_version_display = version_override if version_override else version_rule
+    resolved_version = version or requested_version_display
+    show_resolved = (user_forced_version and resolved_version != version_override)
+    wildcard_display = f"({version_rule})"
+    if warn_on_forced_version:
+        if show_resolved:
+            requested_str = f"'{version_override}' ({resolved_version})"
+        else:
+            requested_str = version_override
+        warning_block = (
+            f'# WARNING: Wildcard version rule in config!\n'
+            f'Write-Host "[WARNING] This app uses a wildcard version rule {wildcard_display} in config," -ForegroundColor Yellow\n'
+            f'Write-Host "but you requested version {requested_str}." -ForegroundColor Yellow\n'
+            'Write-Host "This may install a different version than you expect!" -ForegroundColor Red\n'
+            'Write-Host "Do you want to continue? (Y/N)" -ForegroundColor Cyan\n'
+            '$key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown").Character\n'
+            'if ($key -ne "Y" -and $key -ne "y") { Write-Host \"Aborted by user." -ForegroundColor Red; return }\n'
+        )
     # Handle ?vl or ?versionlist
     if q_vl is not None or q_versionlist is not None:
         tags = get_tags(owner, repo)
@@ -355,6 +379,8 @@ def install(app_name):
         )
         return Response(ps_script, mimetype='text/plain')
     script = install_base
+    if warning_block:
+        script = warning_block + script
     script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
     script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
     script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = "{version}"')
@@ -490,7 +516,7 @@ def not_found(e):
     )
     return Response(ps_script, mimetype='text/plain', status=200)
 
-def refresh_tags_and_regen_installers():
+def refresh_tag_cache():
     global TAG_CACHE
     while True:
         time.sleep(TAG_REFRESH_INTERVAL_MINUTES * 60)
@@ -498,11 +524,7 @@ def refresh_tags_and_regen_installers():
         for endpoint_name, app_cfg in APPS.items():
             owner = app_cfg.get("owner")
             repo = app_cfg.get("repo")
-            binary = app_cfg.get("binary")
-            version_rule = app_cfg.get("version", "latest")
-            display_name = app_cfg.get("name") or repo
-            folder_name = app_cfg.get("folder") or repo
-            if not all([owner, repo, binary]):
+            if not all([owner, repo]):
                 continue
             old_tags = TAG_CACHE.get((owner, repo), [])
             new_tags = get_tags(owner, repo)
@@ -510,33 +532,11 @@ def refresh_tags_and_regen_installers():
                 continue
             if old_tags != new_tags:
                 print(f"[INFO] Tags changed for {repo}: {old_tags} -> {new_tags}")
-                # Only regenerate if the latest tag changed
-                old_latest = old_tags[0] if old_tags else None
-                new_latest = new_tags[0]
-                if old_latest != new_latest:
-                    version = get_tag_by_version(owner, repo, version_rule)
-                    if version:
-                        script = install_base
-                        script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
-                        script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
-                        script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = "{version}"')
-                        script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
-                        script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
-                        script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
-                        script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
-                        script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
-                        script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
-                        script = script.replace('$APP_POST_INSTALL_MESSAGE = ""', f'$APP_POST_INSTALL_MESSAGE = "{app_cfg.get("postInstallMessage", "")}"')
-                        script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
-                                                f'/{owner}/{repo}/releases/download/{version}/{binary}')
-                        script_path = os.path.join(PREBUILT_DIR, f'install{endpoint_name}.ps1')
-                        with open(script_path, 'w', encoding='utf-8') as f:
-                            f.write(script)
-                        print(f"[INFO] Refreshed prebuilt installer for {endpoint_name} -> {repo} v{version} at {script_path}")
+                TAG_CACHE[(owner, repo)] = new_tags
         print(f"[INFO] Periodic tag refresh complete.")
 
 # Start the background tag refresh thread
-threading.Thread(target=refresh_tags_and_regen_installers, daemon=True).start()
+threading.Thread(target=refresh_tag_cache, daemon=True).start()
 
 if __name__ == '__main__':
     from waitress import serve
