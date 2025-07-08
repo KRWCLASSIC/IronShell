@@ -40,7 +40,9 @@ if not os.path.exists(CONFIG_PATH):
                 "folder": "DefaultAppFolder",
                 "autorun": False,
                 "autorunPrefix": "",
-                "autorunArguments": ""
+                "autorunArguments": "",
+                "postInstallMessage": "Default app installed!",
+                "postUninstallMessage": "Default app uninstalled!"
             },
             "nitrosensual": {
                 "owner": "KRWCLASSIC",
@@ -48,7 +50,9 @@ if not os.path.exists(CONFIG_PATH):
                 "binary": "nitrosensual.exe",
                 "version": "latest",
                 "name": "NitroSensual",
-                "folder": "NitroSensual"
+                "folder": "NitroSensual",
+                "postInstallMessage": "NitroSensual installed! Have fun!",
+                "postUninstallMessage": "NitroSensual has been uninstalled. See you next time!"
             },
             "weget": {
                 "owner": "KRWCLASSIC",
@@ -56,7 +60,9 @@ if not os.path.exists(CONFIG_PATH):
                 "binary": "weget.exe",
                 "version": "latest",
                 "name": "Weget",
-                "folder": "weget"
+                "folder": "weget",
+                "postInstallMessage": "Weget is ready! Use it to download anything.",
+                "postUninstallMessage": "Weget has been removed from your system."
             }
         }
     }
@@ -225,6 +231,7 @@ def install_default(app_name):
     script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
     script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
     script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
+    script = script.replace('$APP_POST_INSTALL_MESSAGE = ""', f'$APP_POST_INSTALL_MESSAGE = "{app_cfg.get("postInstallMessage", "")}"')
     script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
                             f'/{owner}/{repo}/releases/download/{version}/{binary}')
     return Response(script, mimetype='text/plain')
@@ -312,6 +319,7 @@ def install(app_name):
                 script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
                 script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
                 script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
+                script = script.replace('$APP_POST_INSTALL_MESSAGE = ""', f'$APP_POST_INSTALL_MESSAGE = "{app_cfg.get("postInstallMessage", "")}"')
                 script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
                                         f'/{owner}/{repo}/releases/download/{version}/{binary}')
                 return Response(script, mimetype='text/plain')
@@ -356,6 +364,7 @@ def install(app_name):
     script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
     script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
     script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
+    script = script.replace('$APP_POST_INSTALL_MESSAGE = ""', f'$APP_POST_INSTALL_MESSAGE = "{app_cfg.get("postInstallMessage", "")}"')
     script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
                             f'/{owner}/{repo}/releases/download/{version}/{binary}')
     print(f"[INFO] Served install script for: {app_name} (version: {version})")
@@ -388,6 +397,7 @@ def uninstall_default(app_name):
     script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
     script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
     script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+    script = script.replace('$APP_POST_UNINSTALL_MESSAGE = ""', f'$APP_POST_UNINSTALL_MESSAGE = "{app_cfg.get("postUninstallMessage", "")}"')
     return Response(script, mimetype='text/plain')
 
 @app.route('/uninstall/<app_name>')
@@ -411,6 +421,7 @@ def uninstall(app_name):
     script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
     script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
     script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
+    script = script.replace('$APP_POST_UNINSTALL_MESSAGE = ""', f'$APP_POST_UNINSTALL_MESSAGE = "{app_cfg.get("postUninstallMessage", "")}"')
     print(f"[INFO] Served uninstall script for: {app_name}")
     return Response(script, mimetype='text/plain')
 
@@ -515,6 +526,7 @@ def refresh_tags_and_regen_installers():
                         script = script.replace('$APP_AUTORUN = $false', f'$APP_AUTORUN = ${str(app_cfg.get("autorun", False)).lower()}')
                         script = script.replace('$APP_AUTORUN_PREFIX = ""', f'$APP_AUTORUN_PREFIX = "{app_cfg.get("autorunPrefix", "")}"')
                         script = script.replace('$APP_AUTORUN_ARGS = ""', f'$APP_AUTORUN_ARGS = "{app_cfg.get("autorunArguments", "")}"')
+                        script = script.replace('$APP_POST_INSTALL_MESSAGE = ""', f'$APP_POST_INSTALL_MESSAGE = "{app_cfg.get("postInstallMessage", "")}"')
                         script = script.replace('/$APP_OWNER/$APP_NAME/releases/download/$APP_VERSION/$APP_NAME.exe',
                                                 f'/{owner}/{repo}/releases/download/{version}/{binary}')
                         script_path = os.path.join(PREBUILT_DIR, f'install{endpoint_name}.ps1')

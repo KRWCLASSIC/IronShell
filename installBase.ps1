@@ -10,6 +10,7 @@ $APP_FOLDER = ""
 $APP_AUTORUN = $false
 $APP_AUTORUN_PREFIX = ""
 $APP_AUTORUN_ARGS = ""
+$APP_POST_INSTALL_MESSAGE = ""
 Write-Host "$APP_DISPLAYNAME ($APP_VERSION) | IronShell installer $scriptVersion" -ForegroundColor Cyan
 
 # Define installation path (user only)
@@ -48,6 +49,10 @@ if (Test-Path $isverPath) {
 }
 
 if ($skipInstall) {
+    if ($APP_POST_INSTALL_MESSAGE -ne "") {
+        Write-Host $APP_POST_INSTALL_MESSAGE -ForegroundColor Magenta
+    }
+
     if ($APP_AUTORUN -eq $true) {
         Write-Host "Press any key to continue... (autorun enabled)"
     } else {
@@ -117,11 +122,16 @@ if (Test-Path $binaryPath) {
     Write-Host "Binary not found for autorun or completion message. Something went wrong." -ForegroundColor Red
 }
 
+if ($APP_POST_INSTALL_MESSAGE -ne "") {
+    Write-Host $APP_POST_INSTALL_MESSAGE -ForegroundColor Magenta
+}
+
 if ($APP_AUTORUN -eq $true) {
     Write-Host "Press any key to continue... (autorun enabled)"
 } else {
     Write-Host "Press any key to continue..."
 }
+
 
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 

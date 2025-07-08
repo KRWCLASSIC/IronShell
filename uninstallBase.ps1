@@ -5,6 +5,7 @@ $APP_OWNER = ""
 $APP_BINARY = ""
 $APP_DISPLAYNAME = ""
 $APP_FOLDER = ""
+$APP_POST_UNINSTALL_MESSAGE = ""
 
 # Define installation path (user only)
 $installPath = Join-Path $env:APPDATA "$APP_OWNER\$APP_FOLDER"
@@ -76,5 +77,10 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User")
 
 # Final message
 Write-Host "Uninstallation complete! $APP_DISPLAYNAME has been removed." -ForegroundColor Green
+
+if ($APP_POST_UNINSTALL_MESSAGE -ne "") {
+    Write-Host $APP_POST_UNINSTALL_MESSAGE -ForegroundColor Magenta
+}
+
 Write-Host "Press any key to continue..."
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

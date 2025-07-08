@@ -10,7 +10,7 @@ Still in development, but it simplifies install proccess of my apps.
 
 ## TODO
 
-- Post install message
+- Auto config & basescripts reload
 - Force remove installation folder on uninstall or config value to configure what should be deleted aswell (with * meaninng force entire folder removal)
 - Create shortcuts on install
 - Non-binary apps support (.py script with wrappers etc., additional subscripts for checking machine env. like installed python etc.) | 25% done (via autorun prefix, left to do: env checking, dependencies, run helpers, winget integration? etc.)
@@ -51,7 +51,7 @@ Still in development, but it simplifies install proccess of my apps.
 4. From a Windows machine, install an app with:
 
    ```powershell
-   iwr http://yourserver/install/weget | iex
+   iwr http://yourserver/install/appname | iex
    ```
 
    Or list available apps:
@@ -92,10 +92,12 @@ The server uses a `config.json` file to define which apps are available for inst
             "binary": "binary.exe",         // (required) Name of the binary to download from the release/tag
             "version": "latest",            // (optional) Version/tag selection rule (see below)
             "name": "Display Name",         // (optional) User-friendly name for display in the installer (defaults to repo)
-            "folder": "installfolder"       // (optional) Folder name for installation (defaults to repo)
+            "folder": "installfolder",      // (optional) Folder name for installation (defaults to repo)
             "autorun": false,               // (optional) Autorun app after install (default: false)
             "autorunPrefix": "",            // (optional) Prefix for autorun command (e.g. "cmd /k", "python -m")
-            "autorunArguments": ""          // (optional) Arguments for autorun command
+            "autorunArguments": "",         // (optional) Arguments for autorun command
+            "postInstallMessage": "",       // (optional) Message shown after install, before 'press any key'
+            "postUninstallMessage": ""      // (optional) Message shown after uninstall, before 'press any key'
         },
         // ... more apps ...
     }
@@ -119,6 +121,8 @@ The server uses a `config.json` file to define which apps are available for inst
 - **autorun**: (Optional, default: false) If true, the app will be run automatically after installation completes.
 - **autorunPrefix**: (Optional) If set, this prefix will be prepended to the autorun command (e.g. `python -m`, `cmd /k`). If set, the autorun command will be launched in a new PowerShell window.
 - **autorunArguments**: (Optional) Arguments to pass to the autorun command (e.g. `--help`).
+- **postInstallMessage**: (Optional) If set, this message will be shown after installation completes.
+- **postUninstallMessage**: (Optional) If set, this message will be shown after uninstallation completes.
 
 ### Example
 
@@ -134,7 +138,9 @@ The server uses a `config.json` file to define which apps are available for inst
             "folder": "steamaccountswitchermanager",
             "autorun": false,
             "autorunPrefix": "",
-            "autorunArguments": ""
+            "autorunArguments": "",
+            "postInstallMessage": "SASM installed! Enjoy switching your Steam accounts.",
+            "postUninstallMessage": "SASM has been removed. Come back soon!"
         },
         "my-python-app": {
             "owner": "me",
@@ -145,7 +151,10 @@ The server uses a `config.json` file to define which apps are available for inst
             "folder": "mypythonapp",
             "autorun": true,
             "autorunPrefix": "python -m",
-            "autorunArguments": "--help"
+            "autorunArguments": "--help",
+            "autorunArguments": "",
+            "postInstallMessage": "",
+            "postUninstallMessage": ""
         }
     }
 }
@@ -185,3 +194,11 @@ If `autorun` is set to true, the installer will automatically run the app after 
 - The `name` field is used for all user-facing output in the PowerShell installer.
 - The `folder` field controls the install directory name; use it to match the folder your app creates or expects.
 - The endpoint name (e.g., `weget`) is what users will use in the install URL: `iwr http://yourserver/install/weget | iex`
+
+### 📜 License
+
+This project is licensed under **KRW LICENSE v1**  
+Free for non-commercial use and public forks.
+
+💬 Contact me even for personal uses — I might feature your project!  
+📬 <classic.krw@gmail.com> • Discord: @krwclassic
