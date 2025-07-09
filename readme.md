@@ -160,7 +160,7 @@ The server uses a `config.json` file to define which apps are available for inst
 }
 ```
 
-### Autorun Behavior
+## Autorun Behavior
 
 If `autorun` is set to true, the installer will automatically run the app after installation:
 
@@ -186,7 +186,7 @@ If `autorun` is set to true, the installer will automatically run the app after 
   "autorunArguments": "--help"
   ```
 
-### Notes
+## Notes
 
 - You can set `autorunPrefix` to `" "` to run the app in new window without any actual prefix.
 - The `owner`, `repo`, and `binary` fields are required for each app. Other fields have default values if not specified.
@@ -195,7 +195,7 @@ If `autorun` is set to true, the installer will automatically run the app after 
 - The `folder` field controls the install directory name; use it to match the folder your app creates or expects.
 - The endpoint name (e.g., `weget`) is what users will use in the install URL: `iwr http://yourserver/install/weget | iex`
 
-### 📜 License
+## 📜 License
 
 This project is licensed under **[KRW LICENSE v1](https://github.com/KRWCLASSIC/IronShell?tab=License-1-ov-file)**  
 Free for non-commercial use and public forks.
