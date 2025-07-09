@@ -154,14 +154,15 @@ def get_tag_by_version(owner, repo, version_rule):
                 return tag
             
         print(f"[WARN] No tag matching wildcard '{version_rule}' found for {repo}")
-        
         return None
+    
     if version_rule == "latest":
         print(f"[INFO] Using latest tag '{tags[0]}' for {repo}")
         return tags[0]
     elif version_rule.startswith("latest-"):
         try:
             idx = int(version_rule.split("-")[1])
+            
             if idx < len(tags):
                 print(f"[INFO] Using tag '{tags[idx]}' for {repo} (latest-{idx})")
                 return tags[idx]
@@ -174,6 +175,20 @@ def get_tag_by_version(owner, repo, version_rule):
     elif version_rule == "first":
         print(f"[INFO] Using first tag '{tags[-1]}' for {repo}")
         return tags[-1]
+    elif version_rule.startswith("first+"):
+        try:
+            idx = int(version_rule.split("+")[1])
+            
+            if idx < len(tags):
+                tag = tags[-(idx+1)]
+                print(f"[INFO] Using tag '{tag}' for {repo} (first+{idx})")
+                return tag
+            else:
+                print(f"[WARN] Not enough tags for first+{idx} in {repo}")
+                return None
+        except Exception:
+            print(f"[ERROR] Invalid first+N format for version_rule '{version_rule}'")
+            return None
     else:
         # Specific tag
         if version_rule in tags:
@@ -284,8 +299,9 @@ def install(app_name):
     # Accept ?version= and ?v= as version arguments
     q_version = request.args.get('version')
     q_v = request.args.get('v')
-    q_vl = request.args.get('vl')
+    
     q_versionlist = request.args.get('versionlist')
+    q_vl = request.args.get('vl')
     
     if q_version:
         if version_override and q_version != version_override:

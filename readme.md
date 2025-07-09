@@ -114,6 +114,7 @@ The server uses a `config.json` file to define which apps are available for inst
   - `"latest"` — The newest tag (default)
   - `"latest-N"` — The Nth latest tag (e.g., `latest-1` is the previous tag)
   - `"first"` — The oldest tag
+  - `"first"` — The Nth oldest tag (e.g., `first+1` is the second oldest tag)
   - `"<tag>"` — A specific tag name
   - Wildcards: `"*-Nuitka"`, `"?.?.?-Nuitka"` — Uses the first tag matching the pattern (shell-style wildcards)
 - **name**: (Optional) User-friendly display name for the app, shown in the PowerShell output. Defaults to the repo name if not set.
