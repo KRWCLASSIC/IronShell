@@ -25,6 +25,9 @@ $existingPaths = @($installPath) | Where-Object { Test-Path (Join-Path $_ "$APP_
 if ($existingPaths) {
     Write-Host "$APP_DISPLAYNAME is already installed at: $($existingPaths -join ', ')" -ForegroundColor Yellow
     $installPath = $existingPaths
+    $alreadyInstalled = $true
+} else {
+    $alreadyInstalled = $false
 }
 
 # Ensure install directory exists before download and ISver.txt write
@@ -45,7 +48,9 @@ if (Test-Path $isverPath) {
         Write-Host "Installed version ($installedVersion) differs from requested ($targetVersion). Updating..." -ForegroundColor Yellow
     }
 } else {
-    Write-Host "No ISver.txt found. Will perform fresh installation of $APP_DISPLAYNAME ($APP_VERSION)." -ForegroundColor Yellow
+    if ($alreadyInstalled) {
+        Write-Host "No ISver.txt found. Will perform fresh installation of $APP_DISPLAYNAME ($APP_VERSION)." -ForegroundColor Yellow
+    }
 }
 
 if ($skipInstall) {
