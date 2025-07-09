@@ -399,6 +399,7 @@ def install(app_name):
         return Response(ps_script, mimetype='text/plain')
 
     version = get_tag_by_version(owner, repo, version_rule)
+    
     if not version:
         tags = get_tags(owner, repo)
         host = request.host_url.rstrip('/')
