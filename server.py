@@ -269,7 +269,7 @@ def install_default(app_name):
         return Response(f'Write-Host "Could not determine version for default app." -ForegroundColor Red', mimetype='text/plain')
     
     script = install_base
-    script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
+    script = script.replace('$APP_NAME = ""', f'$APP_NAME = "{repo}"')
     script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
     script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = "{version}"')
     script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
@@ -436,7 +436,7 @@ def install(app_name):
         script = warning_block + script
         
     # Replace placeholder variables in the PowerShell script template with actual values
-    script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
+    script = script.replace('$APP_NAME = ""', f'$APP_NAME = "{repo}"')
     script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
     script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = "{version}"')
     script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
@@ -476,9 +476,7 @@ def uninstall_default(app_name):
     pom = app_cfg.get("postUninstallMessage", "")
     
     script = uninstall_base
-    script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
     script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
-    script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = ""')
     script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
     script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
     script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')
@@ -504,9 +502,7 @@ def uninstall(app_name):
     pom = app_cfg.get("postUninstallMessage", "")
     
     script = uninstall_base
-    script = script.replace('$APP_NAME = " "', f'$APP_NAME = "{repo}"')
     script = script.replace('$APP_OWNER = ""', f'$APP_OWNER = "{owner}"')
-    script = script.replace('$APP_VERSION = ""', f'$APP_VERSION = ""')
     script = script.replace('$APP_BINARY = ""', f'$APP_BINARY = "{binary}"')
     script = script.replace('$APP_DISPLAYNAME = ""', f'$APP_DISPLAYNAME = "{display_name}"')
     script = script.replace('$APP_FOLDER = ""', f'$APP_FOLDER = "{folder_name}"')

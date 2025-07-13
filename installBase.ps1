@@ -1,11 +1,11 @@
 # Script version | Based on original weget installer (see: https://github.com/KRWCLASSIC/weget/blob/2407bb9dca90645af8df5dbe99ac1ca621a68d61/install/install_weget.ps1)
 # Below variables are handled by external script that scrapes versions and edits these variables.
 $scriptVersion = "v2.1"
-$APP_NAME = " "
+$APP_DISPLAYNAME = ""
+$APP_NAME = ""
 $APP_OWNER = ""
 $APP_VERSION = ""
 $APP_BINARY = ""
-$APP_DISPLAYNAME = ""
 $APP_FOLDER = ""
 $APP_AUTORUN = $false
 $APP_AUTORUN_PREFIX = ""
@@ -136,7 +136,6 @@ if ($APP_AUTORUN -eq $true) {
 } else {
     Write-Host "Press any key to continue..."
 }
-
 
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 

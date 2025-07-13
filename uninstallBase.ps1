@@ -1,21 +1,22 @@
 # Script version
 # Below variables are handled by external script that edits them.
 $scriptVersion = "v1.1"
-$APP_OWNER = ""
-$APP_BINARY = ""
 $APP_DISPLAYNAME = ""
+$APP_BINARY = ""
+$APP_OWNER = ""
 $APP_FOLDER = ""
 $APP_POST_UNINSTALL_MESSAGE = ""
 
-# Define installation path (user only)
+# Define paths
 $installPath = Join-Path $env:APPDATA "$APP_OWNER\$APP_FOLDER"
-
-# ISver file path
 $isverPath = Join-Path $installPath "ISver.txt"
-$installedVersion = "unknown"
+
 if (Test-Path $isverPath) {
     $installedVersion = (Get-Content $isverPath -Raw).Trim()
+} else {
+    $installedVersion = "unknown"
 }
+
 Write-Host "$APP_DISPLAYNAME ($installedVersion) uninstaller | IronShell uninstaller $scriptVersion" -ForegroundColor Cyan
 
 # Check if already installed in user path
@@ -66,6 +67,7 @@ try {
 $userEnvPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
 if ($userEnvPath -like "*${installPath}*") {
     $newPath = ((($userEnvPath -split ";") | Where-Object { $_ -ne $installPath }) -join ";")
+    
     [System.Environment]::SetEnvironmentVariable("Path", $newPath, "User")
     Write-Host "Removed $installPath from user PATH" -ForegroundColor Green
 } else {

@@ -25,10 +25,9 @@ Still in development, but it simplifies install proccess of my apps.
 
 - Serve PowerShell install scripts for any app hosted on GitHub
 - Supports custom binary names, install folders, and display names
-- Flexible version selection (latest, specific, wildcards, etc.)
+- Flexible version selection (latest, oldest, specific, wildcards, etc.)
 - Easy to extend: just edit `config.json`
 - `/list` endpoint for discoverability
-- User-friendly error messages and logs
 
 ## Requirements
 
