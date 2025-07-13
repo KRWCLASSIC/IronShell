@@ -13,7 +13,6 @@ Still in development, but it simplifies install proccess of my apps.
 - Force remove installation folder on uninstall or config value to configure what should be deleted aswell (with * meaninng force entire folder removal)
 - Create shortcuts on install
 - Non-binary apps support (.py script with wrappers etc., additional subscripts for checking machine env. like installed python etc.) | 25% done (via autorun prefix, left to do: env checking, dependencies, run helpers, winget integration? etc.)
-- Clean up base scripts and fix ordering of variables (huge mess)
 
 ## Future
 
